@@ -64,10 +64,19 @@ function SelectData($config, $id = null)
                 $stmt->bind_param($types, ...$params);
             }
             $stmt->execute();
-            $result = $stmt->get_result();
-            $rows = [];
-            while ($row = $result->fetch_assoc()) {
-                $rows[] = $row;
+            if ($stmt->field_count > 0) {
+                $meta = $stmt->result_metadata();
+                $fields = $meta->fetch_fields();
+                $row = [];
+                $rowReferences = [];
+                foreach ($fields as $field) {
+                    $row[$field->name] = null;
+                    $rowReferences[] = &$row[$field->name];
+                }
+                call_user_func_array([$stmt, 'bind_result'], $rowReferences);
+                while ($stmt->fetch()) {
+                    $rows[] = array_map(function ($val) { return $val; }, $row);
+                }
             }
             $stmt->close();
         }
@@ -109,9 +118,19 @@ function SelectData($config, $id = null)
             $stmt->bind_param($types, ...$params);
         }
         $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
+        if ($stmt->field_count > 0) {
+            $meta = $stmt->result_metadata();
+            $fields = $meta->fetch_fields();
+            $row = [];
+            $rowReferences = [];
+            foreach ($fields as $field) {
+                $row[$field->name] = null;
+                $rowReferences[] = &$row[$field->name];
+            }
+            call_user_func_array([$stmt, 'bind_result'], $rowReferences);
+            while ($stmt->fetch()) {
+                $rows[] = array_map(function ($val) { return $val; }, $row);
+            }
         }
         $stmt->close();
     }
