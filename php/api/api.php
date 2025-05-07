@@ -36,6 +36,11 @@ $token = getToken();
 
 // Define the configurations
 $phindmeConfig = [
+    "lookup_recruiters" => [
+        "tablename" => "recruiters",
+        "key" => "id",
+        "select" => ["id", "company_name"]
+    ],
     "candidates" => [
         "tablename" => "candidates",
         "key" => "id",
