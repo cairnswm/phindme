@@ -62,24 +62,34 @@ function executeSQL($sql, $params = [], $options = [])
 
     // Check whether the statement returns a result set
     if ($stmt->field_count > 0) {
-        $result = $stmt->get_result();
-        $rows = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+        $meta = $stmt->result_metadata();
+        $fields = $meta->fetch_fields();
+        $row = [];
+        $rowReferences = [];
+        foreach ($fields as $field) {
+            $row[$field->name] = null;
+            $rowReferences[] = &$row[$field->name];
+        }
+        call_user_func_array([$stmt, 'bind_result'], $rowReferences);
+        $rows = [];
+        while ($stmt->fetch()) {
+            $rows[] = array_map(function ($val) { return $val; }, $row);
+        }
         $stmt->close();
 
         if (isset($options["JSON"])) {
             $jsonFields = is_string($options["JSON"]) ? [$options["JSON"]] : $options["JSON"];
             foreach ($rows as &$row) {
-            foreach ($jsonFields as $field) {
-                if (isset($row[$field])) {
-                $decoded = json_decode($row[$field], true);
-                $row[$field] = $decoded !== null ? $decoded : [];
-                } else {
-                $row[$field] = [];
+                foreach ($jsonFields as $field) {
+                    if (isset($row[$field])) {
+                        $decoded = json_decode($row[$field], true);
+                        $row[$field] = $decoded !== null ? $decoded : [];
+                    } else {
+                        $row[$field] = [];
+                    }
                 }
             }
-            }
         }
-
         return $rows;
     } else {
         $response = [
