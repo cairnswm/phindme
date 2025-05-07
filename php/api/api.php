@@ -491,6 +491,11 @@ $phindmeConfig = [
                     "employer_id",
                     "recruiter_id",
                 ]
+            ],
+            "candidates" => [
+                "tablename" => "recruiter_candidates",
+                "key" => "recruiter_id",
+                "select" => "getCandidatesForRecruiter"
             ]
         ]
     ],
