@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# If the request starts with "api" (with or without trailing slash)
+RewriteCond %{REQUEST_URI} ^/api(/.*)?$ [NC]
+RewriteRule ^api(/.*)?$ /php/api/api.php [L,QSA]
